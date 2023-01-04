@@ -7,6 +7,6 @@ public class SetTargetPosition : MonoBehaviour
   public GameObject target;
     void Update()
     {
-      target.transform.position = transform.position;
+      transform.position = target.transform.position;
     }
 }

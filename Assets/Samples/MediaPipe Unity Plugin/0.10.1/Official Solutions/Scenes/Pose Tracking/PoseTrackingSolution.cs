@@ -11,14 +11,12 @@ namespace Mediapipe.Unity.PoseTracking
 {
   public class PoseTrackingSolution : ImageSourceSolution<PoseTrackingGraph>
   {
-    [SerializeField] private RectTransform _worldAnnotationArea;
     [SerializeField] private DetectionAnnotationController _poseDetectionAnnotationController;
     [SerializeField] private PoseLandmarkListAnnotationController _poseLandmarksAnnotationController;
-    [SerializeField] private PoseWorldLandmarkListAnnotationController _poseWorldLandmarksAnnotationController;
     [SerializeField] private MaskAnnotationController _segmentationMaskAnnotationController;
     [SerializeField] private NormalizedRectAnnotationController _roiFromLandmarksAnnotationController;
     [SerializeField] private TargetStateController targetStateController;
-
+    [SerializeField] private MovementController movementController;
 
     public GameObject noseTarget;
 
@@ -61,7 +59,6 @@ namespace Mediapipe.Unity.PoseTracking
     protected override void SetupScreen(ImageSource imageSource)
     {
       base.SetupScreen(imageSource);
-      _worldAnnotationArea.localEulerAngles = imageSource.rotation.Reverse().GetEulerAngles();
     }
 
     protected override void OnStartRun()
@@ -70,7 +67,6 @@ namespace Mediapipe.Unity.PoseTracking
       {
         graphRunner.OnPoseDetectionOutput += OnPoseDetectionOutput;
         graphRunner.OnPoseLandmarksOutput += OnPoseLandmarksOutput;
-        graphRunner.OnPoseWorldLandmarksOutput += OnPoseWorldLandmarksOutput;
         graphRunner.OnSegmentationMaskOutput += OnSegmentationMaskOutput;
         graphRunner.OnRoiFromLandmarksOutput += OnRoiFromLandmarksOutput;
       }
@@ -78,7 +74,6 @@ namespace Mediapipe.Unity.PoseTracking
       var imageSource = ImageSourceProvider.ImageSource;
       SetupAnnotationController(_poseDetectionAnnotationController, imageSource);
       SetupAnnotationController(_poseLandmarksAnnotationController, imageSource);
-      SetupAnnotationController(_poseWorldLandmarksAnnotationController, imageSource);
       SetupAnnotationController(_segmentationMaskAnnotationController, imageSource);
       _segmentationMaskAnnotationController.InitScreen(imageSource.textureWidth, imageSource.textureHeight);
       SetupAnnotationController(_roiFromLandmarksAnnotationController, imageSource);
@@ -115,23 +110,27 @@ namespace Mediapipe.Unity.PoseTracking
         float yOffset = -1.75f;
         float xOffset = xScale/2;
         Vector3 nose;
-        Vector3 leftHand;
-        Vector3 rightHand;
+
         nose = transformCameraCoordinates(poseLandmarks.Landmark[0], xScale, xOffset, yScale, yOffset);
         noseTarget.transform.localPosition = nose;
-        leftHand = transformCameraCoordinates(poseLandmarks.Landmark[15], xScale*2, xScale, yScale, yOffset);
-        rightHand = transformCameraCoordinates(poseLandmarks.Landmark[16], xScale*2, xScale, yScale, yOffset);
-        leftHand.z =  -(poseLandmarks.Landmark[15].Z - poseLandmarks.Landmark[11].Z)-.5f;
-        rightHand.z = -(poseLandmarks.Landmark[16].Z - poseLandmarks.Landmark[12].Z)-.5f;
-        targetStateController.setState(poseLandmarks);
-        //midShoulderTarget.transform.localPosition = mid;
+        /*
+         * Vector3 leftHand;
+           Vector3 rightHand;
+         * leftHand = transformCameraCoordinates(poseLandmarks.Landmark[15], xScale * 2, xScale, yScale, yOffset);
+        rightHand = transformCameraCoordinates(poseLandmarks.Landmark[16], xScale * 2, xScale, yScale, yOffset);
+        leftHand.z = -(poseLandmarks.Landmark[15].Z - poseLandmarks.Landmark[11].Z) - .5f;
+        rightHand.z = -(poseLandmarks.Landmark[16].Z - poseLandmarks.Landmark[12].Z) - .5f;
         if (leftHand.x > rightHand.x)
         {
-          (leftHand, rightHand) = (rightHand, leftHand);
-        }
+            (leftHand, rightHand) = (rightHand, leftHand);
+        }*/
+        
+        //midShoulderTarget.transform.localPosition = mid;
+        
         //leftHandTarget.transform.localPosition = leftHand;
         //rightHandTarget.transform.localPosition = rightHand;
-
+        targetStateController.setState(poseLandmarks);
+        movementController.setState(poseLandmarks);
       }
       //_poseWorldLandmarksAnnotationController.DrawNow(poseWorldLandmarks);
       //_segmentationMaskAnnotationController.DrawNow(segmentationMask);
@@ -150,11 +149,6 @@ namespace Mediapipe.Unity.PoseTracking
     private void OnPoseLandmarksOutput(object stream, OutputEventArgs<NormalizedLandmarkList> eventArgs)
     {
       _poseLandmarksAnnotationController.DrawLater(eventArgs.value);
-    }
-
-    private void OnPoseWorldLandmarksOutput(object stream, OutputEventArgs<LandmarkList> eventArgs)
-    {
-      _poseWorldLandmarksAnnotationController.DrawLater(eventArgs.value);
     }
 
     private void OnSegmentationMaskOutput(object stream, OutputEventArgs<ImageFrame> eventArgs)

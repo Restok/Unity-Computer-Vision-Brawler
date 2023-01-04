@@ -17,7 +17,7 @@ public class TargetStateController : MonoBehaviour
   private Vector3 leftTarget;
   private Vector3 rightTarget;
   private float centerOffset = .31f;
-  private Vector3 guardPosition = new Vector3(-0.16f, 0, 0.41f);
+  private Vector3 guardPosition = new Vector3(-0.16f, 0, 0.2f);
   private Vector3 extendPosition = new Vector3(-0.16f, 0, 0.75f);
   private Vector3 restPosition = new Vector3(0.50f, 0.13f);
   private const float moveSpeed = 3f;
@@ -60,7 +60,6 @@ public class TargetStateController : MonoBehaviour
     currentLeftState = determineArmState(leftArm);
     leftTarget = getTarget(currentLeftState);
     leftTarget.y = -centerOffset;
-    
     currentRightState = determineArmState(rightArm);
     rightTarget = getTarget(currentRightState);
     rightTarget.y = centerOffset;
@@ -68,24 +67,37 @@ public class TargetStateController : MonoBehaviour
   }
   private State determineArmState(NormalizedLandmark[] arm)
   {
-    if(arm[2].Y >= arm[0].Y)
+    if (arm[2].Y >= arm[0].Y)
     {
       return State.REST;
     } else
     {
+      Vector3 elbowShoulder = vectorBetween(arm[1], arm[0]);
+      Vector3 elbowFinger = vectorBetween(arm[1], arm[2]);
+      float angle = Vector3.Angle(elbowShoulder, elbowFinger);
+      if(angle > 100)
+      {
+        return State.EXTENDED;
+      }
       return State.GUARD;
     }
   }
-  
+  private Vector3 vectorBetween(NormalizedLandmark from, NormalizedLandmark to)
+  {
+    return new Vector3(from.X - to.X, from.Y - to.Y, 0);
+  }
   private Vector3 getTarget(State state)
   {
-    switch (currentLeftState)
+    switch (state)
     {
       case State.REST:
+        //Debug.Log("State rest");
         return restPosition;
       case State.GUARD:
+        //Debug.Log("State guard");
         return guardPosition;
       case State.EXTENDED:
+        //Debug.Log("State extended");
         return extendPosition;
     }
     return restPosition;

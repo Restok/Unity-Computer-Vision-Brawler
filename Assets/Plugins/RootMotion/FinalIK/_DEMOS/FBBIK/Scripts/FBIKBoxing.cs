@@ -26,9 +26,9 @@ namespace RootMotion.Demos {
 		public FullBodyBipedEffector effector;
 		[Tooltip("Weight of aiming the body to follow the target")]
 		public AnimationCurve aimWeight;
-
+		public Transform playerHead;
 		private Animator animator;
-
+		private bool setTarget = true;
 		void Start() {
 			animator = GetComponent<Animator>();
 		}
@@ -36,22 +36,21 @@ namespace RootMotion.Demos {
 		void LateUpdate() {
 			// Getting the weight of pinning the fist to the target
 			float hitWeight = animator.GetFloat("HitWeight");
-
 			// Pinning the first with FBIK
-			ik.solver.GetEffector(effector).position = target.position;
 			ik.solver.GetEffector(effector).positionWeight = hitWeight * weight;
-
-			// Aiming the body with AimIK to follow the target
-			if (aim != null) {
-				// Make the aim transform always look at the pin. This will normalize the default aim diretion to the animated pose.
-				aim.solver.transform.LookAt(pin.position);
-
-				// Set aim target
-				aim.solver.IKPosition = target.position;
-				
-				// Setting aim weight
-				aim.solver.IKPositionWeight = aimWeight.Evaluate(hitWeight) * weight;
+			if(hitWeight > 0 && setTarget)
+            {
+				Debug.Log("Setting target");
+				ik.solver.GetEffector(effector).position = target.position;
+				target.position = playerHead.position;
+				setTarget = false;
 			}
+			else
+            {
+				setTarget = true;
+            }
+
+
 		}
     }
 }
