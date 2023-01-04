@@ -75,6 +75,7 @@
     <Compile Include="Assets\Samples\MediaPipe Unity Plugin\0.10.1\Official Solutions\UI\Scripts\SolutionMenu.cs" />
     <Compile Include="Assets\Samples\MediaPipe Unity Plugin\0.10.1\Official Solutions\Common\Scripts\ImageSourceSolution.cs" />
     <Compile Include="Assets\Samples\MediaPipe Unity Plugin\0.10.1\Official Solutions\Common\Scripts\ImageSource\ImageSource.cs" />
+    <Compile Include="Assets\MovementController.cs" />
     <Compile Include="Assets\Samples\MediaPipe Unity Plugin\0.10.1\Official Solutions\Common\Scripts\GlobalConfigManager.cs" />
     <Compile Include="Assets\Samples\MediaPipe Unity Plugin\0.10.1\Official Solutions\Scenes\Box Tracking\BoxTrackingSolution.cs" />
     <Compile Include="Assets\Samples\MediaPipe Unity Plugin\0.10.1\Official Solutions\Common\Scripts\RunningMode.cs" />
@@ -141,7 +142,6 @@
     <Compile Include="Assets\Samples\MediaPipe Unity Plugin\0.10.1\Official Solutions\UI\Scripts\GlobalConfig.cs" />
     <Compile Include="Assets\Samples\MediaPipe Unity Plugin\0.10.1\Official Solutions\Common\Scripts\GraphRunner.cs" />
     <Compile Include="Assets\Samples\MediaPipe Unity Plugin\0.10.1\Official Solutions\Scenes\MediaPipe Video\MediaPipeVideoGraph.cs" />
-    <Compile Include="Assets\MovementController.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\Samples\MediaPipe Unity Plugin\0.10.1\Official Solutions\Scenes\Face Detection\face_detection_opengles.txt" />
@@ -180,6 +180,7 @@
     <None Include="Assets\Samples\MediaPipe Unity Plugin\0.10.1\Official Solutions\Scenes\Hand Tracking\hand_tracking_cpu.txt" />
     <None Include="Assets\Samples\MediaPipe Unity Plugin\0.10.1\Official Solutions\Scenes\MediaPipe Video\official_hand_tracking_demo_cpu.txt" />
     <None Include="Assets\Samples\MediaPipe Unity Plugin\0.10.1\Official Solutions\Scenes\Object Detection\object_detection_opengles.txt" />
+    <None Include="Assets\Customizable Skybox\Stylized Sky\Shaders\Stylized Sky.shader" />
     <None Include="Assets\Samples\MediaPipe Unity Plugin\0.10.1\Official Solutions\Scenes\Selfie Segmentation\selfie_segmentation_opengles.txt" />
     <None Include="Assets\Samples\MediaPipe Unity Plugin\0.10.1\Official Solutions\Scenes\Box Tracking\box_tracking_opengles.txt" />
     <None Include="Assets\Samples\MediaPipe Unity Plugin\0.10.1\Official Solutions\Scenes\Holistic\holistic_opengles.txt" />

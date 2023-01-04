@@ -53,7 +53,7 @@ public class TargetStateController : MonoBehaviour
                                      poseLandmarks.Landmark[13],
                                      poseLandmarks.Landmark[19] };
 
-    if(leftArm[0].X > rightArm[0].X)
+    if(leftArm[0].X < rightArm[0].X)
     {
       (leftArm, rightArm) = (rightArm, leftArm);
     }
