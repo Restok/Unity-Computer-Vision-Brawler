@@ -38,19 +38,12 @@ namespace RootMotion.Demos {
 			float hitWeight = animator.GetFloat("HitWeight");
 			// Pinning the first with FBIK
 			ik.solver.GetEffector(effector).positionWeight = hitWeight * weight;
-			if(hitWeight > 0 && setTarget)
-            {
-				Debug.Log("Setting target");
-				ik.solver.GetEffector(effector).position = target.position;
-				target.position = playerHead.position;
-				setTarget = false;
-			}
-			else
-            {
-				setTarget = true;
-            }
-
-
+		}
+		public void SetHeadPosition()
+        {
+			target.position = playerHead.position;
+			ik.solver.GetEffector(effector).position = target.position;
+			
 		}
     }
 }

@@ -3,13 +3,17 @@ using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using Mediapipe;
+using RootMotion.FinalIK;
 using UnityEngine;
 
 public class MovementController : MonoBehaviour
 {
-    private int bufferSize = 30;
+    private int bufferSize = 10;
     private float velocityThreshold = 1.5f;
     public float movementSpeed = 1f;
+    [SerializeField] private Animator anim;
+    [SerializeField] private VRIK ik;
+
     public class FixedSizedQueue
     {
         public float avgValue { get; set; }
@@ -42,32 +46,64 @@ public class MovementController : MonoBehaviour
     FixedSizedQueue leftShoulderBuffer;
     FixedSizedQueue rightShoulderBuffer;
     FixedSizedQueue rightVelocityBuffer;
+    FixedSizedQueue headVelocityBuffer;
+    
+
     float prevLeftHandPos = -1;
     float prevRightHandPos = -1;
     float prevLeftShoulderPos = -1;
     float prevRightShoulderPos = -1;
+    float prevHeadPos = -1;
+
+    float ikTargetWeight = 1f;
+    float ikGradual = 1f;
     private CharacterController characterController;
     private void Start()
     {
         characterController = GetComponent<CharacterController>();
-
         leftVelocityBuffer = new FixedSizedQueue(bufferSize);
         rightVelocityBuffer = new FixedSizedQueue(bufferSize);
         leftShoulderBuffer = new FixedSizedQueue(bufferSize);
         rightShoulderBuffer = new FixedSizedQueue(bufferSize);
+        headVelocityBuffer = new FixedSizedQueue(bufferSize);
     }
     private void Update()
     {
+        ikTargetWeight = 1;
+        anim.SetFloat("Speed", 0);
+        Vector3 moveVelocity = new Vector3(0, 0, 0);
         Vector3 forward = transform.TransformDirection(Vector3.forward);
         if (!leftVelocityBuffer.occluded && !rightVelocityBuffer.occluded)
         {
-            bool leftOk = leftVelocityBuffer.avgValue > velocityThreshold && leftShoulderBuffer.avgValue < 0.5;
-            bool rightOK = rightVelocityBuffer.avgValue > velocityThreshold && rightShoulderBuffer.avgValue < 0.5;
+            bool leftOk = leftVelocityBuffer.avgValue > velocityThreshold && leftShoulderBuffer.avgValue < 0.7;
+            bool rightOK = rightVelocityBuffer.avgValue > velocityThreshold && rightShoulderBuffer.avgValue < 0.7;
             if (leftOk && rightOK)
             {
-                characterController.SimpleMove(forward * leftVelocityBuffer.avgValue * 2);
+                anim.SetFloat("Speed", leftVelocityBuffer.avgValue*movementSpeed);
+                moveVelocity = forward * leftVelocityBuffer.avgValue * movementSpeed;
+                ikTargetWeight = 0;
             }
         }
+        if (ikGradual != ikTargetWeight)
+        {
+            ikGradual += (ikTargetWeight - ikGradual)*Time.deltaTime;
+        }
+        ik.solver.SetIKPositionWeight(ikGradual);
+        if(headVelocityBuffer.avgValue < 0.5)
+        {
+            if (prevHeadPos >= 0.75)
+            {
+                Vector3 left = -transform.TransformDirection(transform.right)*movementSpeed;
+                moveVelocity += left;
+            }
+            else if(prevHeadPos <= 0.25)
+            {
+                Vector3 right = transform.TransformDirection(transform.right)*movementSpeed;
+                moveVelocity += right;
+            }
+        } 
+        characterController.SimpleMove(moveVelocity);
+
     }
     public void setState(NormalizedLandmarkList poseLandmarks)
     {
@@ -75,6 +111,7 @@ public class MovementController : MonoBehaviour
         NormalizedLandmark rightHand = poseLandmarks.Landmark[20];
         NormalizedLandmark leftShoulder = poseLandmarks.Landmark[11];
         NormalizedLandmark rightShoulder = poseLandmarks.Landmark[12];
+        NormalizedLandmark nose = poseLandmarks.Landmark[0];
 
         if (leftShoulder.X < rightShoulder.X)
         {
@@ -85,13 +122,23 @@ public class MovementController : MonoBehaviour
         updateVelocity(ref prevLeftShoulderPos, leftShoulder, leftShoulderBuffer);
         updateVelocity(ref prevRightHandPos, rightHand, rightVelocityBuffer);
         updateVelocity(ref prevRightShoulderPos, rightShoulder, rightShoulderBuffer);
+        updateVelocity(ref prevHeadPos, nose, headVelocityBuffer, "X");
+
     }
-    private void updateVelocity(ref float prevPos, NormalizedLandmark landmark, FixedSizedQueue buffer)
+    private void updateVelocity(ref float prevPos, NormalizedLandmark landmark, FixedSizedQueue buffer, String dir="Y")
     {
         if (landmark.Visibility > 0.6)
         {
             buffer.occluded = false;
-            float pos = landmark.Y;
+            float pos;
+            if(dir == "Y")
+            {
+                pos = landmark.Y;
+            }
+            else
+            {
+                pos = landmark.X;
+            }
             if (prevPos == -1)
             {
                 prevPos = pos;
